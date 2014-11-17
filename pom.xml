@@ -7,8 +7,8 @@
     <artifactId>light-stomp-client</artifactId>
     <packaging>jar</packaging>
     <version>0.5-SNAPSHOT</version>
-    <name>Gozirra</name>
-    <description>A leightweight STOMP over Websocket client for Java</description>
+    <name>LightSTOMP</name>
+    <description>A lightweight STOMP over Websocket client for Java</description>
 
     <dependencies>
 

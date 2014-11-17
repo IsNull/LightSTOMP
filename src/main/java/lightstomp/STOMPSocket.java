@@ -8,6 +8,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +27,6 @@ public class STOMPSocket {
 
     }
 
-
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
         System.out.printf("Connection closed: %d - %s%n", statusCode, reason);
@@ -35,15 +35,11 @@ public class STOMPSocket {
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
-        System.out.printf("Got connect: %s%n", session);
+        System.out.printf("Got connected to WS: %s%n", session);
         this.session = session;
         try {
-            Future<Void> fut;
-            fut = sendString("Hello");
-            fut.get(2, TimeUnit.SECONDS);
-            fut = sendString("Thanks for the conversation.");
-            fut.get(2, TimeUnit.SECONDS);
-            session.close(StatusCode.NORMAL, "I'm done");
+            stompConnect("admin","admin"); // TODO
+
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -54,14 +50,35 @@ public class STOMPSocket {
         System.out.printf("Got msg: %s%n", msg);
     }
 
-    public Future<Void> sendString(String msg){
+    public Future<Void> sendAsync(StompRequest request){
         if(session != null){
-           return session.getRemote().sendStringByFuture("Hello");
+            System.out.println("Sending request: " + request.toString());
+           return session.getRemote().sendStringByFuture(request.toString());
         }
         return null;
+    }
+    public void sendAndWait(StompRequest request) throws IOException{
+        if(session != null){
+            System.out.println("Sending request: " + request.toString());
+
+            session.getRemote().sendString(request.toString());
+        }
     }
 
     public boolean isConnected() {
         return session != null && session.isOpen();
+    }
+
+    private void stompConnect(String user, String password) {
+        StompRequest request = new StompRequest(CommandType.CONNECT)
+                .withHeader("accept-version", "1.0,1.1,2.0")
+                //.withHeader("host", "stomp.github.org") // TODO !!
+                .withHeader("login", user)
+                .withHeader("passcode", password);
+        try {
+            sendAndWait(request);
+        } catch (IOException e) {
+            e.printStackTrace(); // TODO
+        }
     }
 }
