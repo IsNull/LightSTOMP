@@ -1,10 +1,13 @@
 package lightstomp;
 
-import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
 
+
+import org.glassfish.tyrus.client.ClientManager;
+
+import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Implements a simple STOMP over Websocket client in pure Java.
@@ -13,36 +16,45 @@ import java.net.URI;
  */
 public class StompOverWSClient {
 
-    private final STOMPSocket socket;
 
-    public StompOverWSClient(String url){
-        WebSocketClient client = new WebSocketClient();
-        socket = new STOMPSocket();
+    private Session webSession;
+
+
+    public StompOverWSClient(String url)  {
+        final ClientEndpointConfig cec = ClientEndpointConfig.Builder.create().build();
+
+        ClientManager client = ClientManager.createClient();
         try {
-            client.start();
-            URI echoUri = new URI(url);
-            ClientUpgradeRequest request = new ClientUpgradeRequest();
-
-            System.out.printf("Connecting to WS : %s%n", echoUri);
-            client.connect(socket, echoUri, request);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        } finally {
             try {
-                client.stop();
-            } catch (Exception e) {
+                client.connectToServer(new Endpoint() {
+                    @Override
+                    public void onOpen(Session session, EndpointConfig config) {
+                        webSession = session;
+                        session.addMessageHandler(new MessageHandler.Whole<String>() {
+                            @Override
+                            public void onMessage(String message) {
+                                System.out.println("Received message: "+message);
+                            }
+                        });
+                    }
+                }, cec, new URI(url));
+            } catch (URISyntaxException e) {
                 e.printStackTrace();
             }
+        } catch (DeploymentException | IOException e) {
+            e.printStackTrace(); // TODO
         }
     }
 
     public void send(String channel, String message){
-        if(socket.isConnected()) {
-            StompRequest request = new StompRequest(CommandType.SEND, channel).withBody(message);
+        Session session = webSession;
+        StompFrame request = new StompFrame(CommandType.SEND, channel).withBody(message);
+
+        if(session != null && session.isOpen()){
             try {
-                socket.sendAndWait( request );
+                session.getBasicRemote().sendText(request.toString());
             } catch (IOException e) {
-                e.printStackTrace();
+                e.printStackTrace(); // TODO
             }
         }
     }

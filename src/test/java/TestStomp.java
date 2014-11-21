@@ -1,11 +1,14 @@
-import lightstomp.MessageListener;
-import lightstomp.SimpleEchoSocket;
-import lightstomp.StompOverWSClient;
-import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
 
+import lightstomp.MessageListener;
+import lightstomp.StompOverWSClient;
+import org.glassfish.tyrus.client.ClientManager;
+
+
+import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -17,12 +20,13 @@ public class TestStomp {
         TestStomp test = new TestStomp();
         //test.testWSEcho(); // Working!
 
+        //test.test();
         test.testStompEcho();
 
     }
 
-    private void testStompEcho(){
-        StompOverWSClient stompClient = new StompOverWSClient("ws://localhost:8080/ws/rest/messages");
+    private void testStompEcho()  {
+        StompOverWSClient stompClient = new StompOverWSClient("ws://echo.websocket.org");
 
         stompClient.subscribe("/topic/echo", new MessageListener() {
             @Override
@@ -40,26 +44,41 @@ public class TestStomp {
         }
     }
 
-    private void testWSEcho(){
-        String destUri = "ws://echo.websocket.org";
-        WebSocketClient client = new WebSocketClient();
-        SimpleEchoSocket socket = new SimpleEchoSocket();
+    private static CountDownLatch messageLatch;
+    private static final String SENT_MESSAGE = "Hello World";
+
+    private void test(){
         try {
-            client.start();
-            URI echoUri = new URI(destUri);
-            ClientUpgradeRequest request = new ClientUpgradeRequest();
-            client.connect(socket, echoUri, request);
-            System.out.printf("Connecting to : %s%n", echoUri);
-            socket.awaitClose(5, TimeUnit.SECONDS);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        } finally {
-            try {
-                client.stop();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            messageLatch = new CountDownLatch(1);
+
+            final ClientEndpointConfig cec = ClientEndpointConfig.Builder.create().build();
+
+            ClientManager client = ClientManager.createClient();
+            client.connectToServer(new Endpoint() {
+
+                @Override
+                public void onOpen(Session session, EndpointConfig config) {
+                    try {
+                        session.addMessageHandler(new MessageHandler.Whole<String>() {
+
+                            @Override
+                            public void onMessage(String message) {
+                                System.out.println("Received message: "+message);
+                                messageLatch.countDown();
+                            }
+                        });
+                        session.getBasicRemote().sendText(SENT_MESSAGE);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, cec, new URI("ws://echo.websocket.org"));
+            messageLatch.await(100, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
+
+
 
 }
