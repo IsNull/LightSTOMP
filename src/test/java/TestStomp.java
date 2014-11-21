@@ -3,30 +3,31 @@ import lightstomp.MessageListener;
 import lightstomp.StompOverWSClient;
 import org.glassfish.tyrus.client.ClientManager;
 
-
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by paba on 11/17/14.
  */
 public class TestStomp {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws URISyntaxException {
         TestStomp test = new TestStomp();
         //test.testWSEcho(); // Working!
 
-        //test.test();
-        test.testStompEcho();
+
+        URI uri1 = new URI("ws://echo.websocket.org");
+        URI uri2 = new URI("wss://echo.websocket.org");
+        URI uri3 = new URI("ws://localhost:8080/ws/rest/echo2");
+        test.testWebSocket(uri3);
+        //test.testStompEcho();
 
     }
 
     private void testStompEcho()  {
-        StompOverWSClient stompClient = new StompOverWSClient("ws://echo.websocket.org");
+        StompOverWSClient stompClient = new StompOverWSClient("ws://localhost:8080/ws/rest/messages");
 
         stompClient.subscribe("/topic/echo", new MessageListener() {
             @Override
@@ -44,13 +45,10 @@ public class TestStomp {
         }
     }
 
-    private static CountDownLatch messageLatch;
     private static final String SENT_MESSAGE = "Hello World";
 
-    private void test(){
+    private void testWebSocket(URI testEchoUrl){
         try {
-            messageLatch = new CountDownLatch(1);
-
             final ClientEndpointConfig cec = ClientEndpointConfig.Builder.create().build();
 
             ClientManager client = ClientManager.createClient();
@@ -64,7 +62,6 @@ public class TestStomp {
                             @Override
                             public void onMessage(String message) {
                                 System.out.println("Received message: "+message);
-                                messageLatch.countDown();
                             }
                         });
                         session.getBasicRemote().sendText(SENT_MESSAGE);
@@ -72,8 +69,12 @@ public class TestStomp {
                         e.printStackTrace();
                     }
                 }
-            }, cec, new URI("ws://echo.websocket.org"));
-            messageLatch.await(100, TimeUnit.SECONDS);
+            }, cec, testEchoUrl);
+            try {
+                System.in.read();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
