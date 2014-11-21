@@ -3,7 +3,7 @@ package lightstomp;
 /**
  * Created by paba on 11/17/14.
  */
-public enum CommandType {
+public enum FrameType {
     CONNECT,
     SEND,
     SUBSCRIBE,
@@ -13,5 +13,11 @@ public enum CommandType {
     ABORT,
     ACK,
     NACK,
-    DISCONNECT
-    }
+    DISCONNECT,
+
+    CONNECTED,
+    RECEIPT,
+    ERROR,
+    MESSAGE;
+
+}

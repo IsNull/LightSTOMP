@@ -1,6 +1,6 @@
 
 import lightstomp.MessageListener;
-import lightstomp.StompOverWSClient;
+import lightstomp.StompClient;
 import org.glassfish.tyrus.client.ClientManager;
 
 import javax.websocket.*;
@@ -21,22 +21,32 @@ public class TestStomp {
         URI uri1 = new URI("ws://echo.websocket.org");
         URI uri2 = new URI("wss://echo.websocket.org");
         URI uri3 = new URI("ws://localhost:8080/ws/rest/echo2");
-        test.testWebSocket(uri3);
-        //test.testStompEcho();
+        //test.testWebSocket(uri3);
 
+        test.testStompEcho();
     }
 
     private void testStompEcho()  {
-        StompOverWSClient stompClient = new StompOverWSClient("ws://localhost:8080/ws/rest/messages");
+        // ws://localhost:8080/ws/rest/messages
+        try {
+            StompClient stompClient = StompClient.stompOverWebSocket("ws://localhost:8080/ws/rest/messages");
 
-        stompClient.subscribe("/topic/echo", new MessageListener() {
-            @Override
-            public void messageReceived(String message) {
-                System.out.println("STOMP server sent: " + message);
+            if(stompClient.isConnected()){
+
+                stompClient.subscribe("/topic/echo", new MessageListener() {
+                    @Override
+                    public void messageReceived(String message) {
+                        System.out.println("STOMP server sent: " + message);
+                    }
+                });
+
+                stompClient.stompSend("/echo", "hello world!");
             }
-        });
 
-        stompClient.send("/echo", "hello world!");
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
 
         try {
             System.in.read();
@@ -61,7 +71,7 @@ public class TestStomp {
 
                             @Override
                             public void onMessage(String message) {
-                                System.out.println("Received message: "+message);
+                                System.out.println("Received message: " + message);
                             }
                         });
                         session.getBasicRemote().sendText(SENT_MESSAGE);
