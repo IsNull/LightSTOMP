@@ -42,9 +42,9 @@ public class StompSocketOverWS implements IStompSocket {
                 @Override
                 public void onOpen(Session session, EndpointConfig config) {
                     webSession = session;
-                    session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    session.addMessageHandler(new MessageHandler.Whole<byte[]>() {
                         @Override
-                        public void onMessage(String message) {
+                        public void onMessage(byte[]  message) {
                             onWebSocketMessageReceived(message);
                         }
                     });
@@ -89,7 +89,7 @@ public class StompSocketOverWS implements IStompSocket {
     }
 
 
-    private void onWebSocketMessageReceived(String message){
+    private void onWebSocketMessageReceived(byte[] message){
         System.out.println("Received message: "+message); // TODO
         StompFrame frame = null;
         try {

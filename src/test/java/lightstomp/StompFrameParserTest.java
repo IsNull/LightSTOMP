@@ -3,6 +3,9 @@ package lightstomp;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -20,7 +23,7 @@ public class StompFrameParserTest {
                                         .withHeader("login", "nice")
                                         .withHeader("passcode", "evenbetter");
 
-        String payload = frame.toString();
+        ByteBuffer payload = frame.toByteBuffer();
 
         StompFrameParser parser = new StompFrameParser();
 
@@ -44,10 +47,9 @@ public class StompFrameParserTest {
 
                 .withBody("This is an example body without any bad chars!");
 
-        String payload = frame.toString() + "asfdasfasdfsadfsdf";
+        ByteBuffer payload = frame.toByteBuffer();
 
         StompFrameParser parser = new StompFrameParser();
-
         StompFrame frameParsed = parser.parse(payload);
 
         assertEquals("Body was not correct!", frame.getBody(), frameParsed.getBody()  );
@@ -69,7 +71,7 @@ public class StompFrameParserTest {
 
         StompFrameParser parser = new StompFrameParser();
 
-        StompFrame frameParsed = parser.parse(payload);
+        StompFrame frameParsed = parser.parse(payload.getBytes(Charset.forName("UTF-8")));
 
         assertEquals("Body was not correct!", frame.getBody(), frameParsed.getBody()  );
     }

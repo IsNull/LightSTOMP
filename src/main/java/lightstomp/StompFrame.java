@@ -1,7 +1,5 @@
 package lightstomp;
 
-import javax.websocket.Encoder;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
