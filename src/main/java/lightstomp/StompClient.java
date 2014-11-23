@@ -2,7 +2,7 @@ package lightstomp;
 
 import lightstomp.stompSocket.ISocketListener;
 import lightstomp.stompSocket.IStompSocket;
-import lightstomp.ws.StompSocketOverWS;
+import lightstomp.ws.StompWebSocket;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class StompClient {
      * @throws URISyntaxException
      */
     public static StompClient stompOverWebSocket(String uri) throws URISyntaxException {
-        return new StompClient(new StompSocketOverWS(uri));
+        return new StompClient(new StompWebSocket(uri));
     }
 
 

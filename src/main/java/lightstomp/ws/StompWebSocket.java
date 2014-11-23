@@ -15,11 +15,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * Implements a simple STOMP over Websocket client in pure Java.
+ * Implements a simple STOMP over Websocket
  *
  * Created by paba on 11/17/14.
  */
-public class StompSocketOverWS implements IStompSocket {
+public class StompWebSocket implements IStompSocket {
 
     private final URI server;
     private Session webSession;
@@ -29,7 +29,7 @@ public class StompSocketOverWS implements IStompSocket {
 
 
 
-    public StompSocketOverWS(String url) throws URISyntaxException  {
+    public StompWebSocket(String url) throws URISyntaxException  {
         server = new URI(url);
     }
 
