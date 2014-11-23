@@ -81,7 +81,7 @@ public class StompSocketOverWS implements IStompSocket {
         Session session = webSession;
         if(session != null && session.isOpen()){
             try {
-                session.getBasicRemote().sendText(frame.toString());
+                session.getBasicRemote().sendBinary(frame.toByteBuffer());
             } catch (IOException e) {
                 e.printStackTrace(); // TODO
             }

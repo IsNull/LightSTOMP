@@ -31,7 +31,7 @@ public class StompFrameParserTest {
         assertEquals("Header was not correct","evenbetter", frameParsed.getHeaderValue("passcode"));
     }
 
-    @Ignore
+
     @Test
     public void testParseValidBody() throws StompParseException {
 
@@ -44,7 +44,7 @@ public class StompFrameParserTest {
 
                 .withBody("This is an example body without any bad chars!");
 
-        String payload = frame.toString();
+        String payload = frame.toString() + "asfdasfasdfsadfsdf";
 
         StompFrameParser parser = new StompFrameParser();
 
@@ -52,5 +52,28 @@ public class StompFrameParserTest {
 
         assertEquals("Body was not correct!", frame.getBody(), frameParsed.getBody()  );
     }
+
+    @Test
+    public void testParseValidBodyWithChunck() throws StompParseException {
+
+        StompFrame frame = new StompFrame(FrameType.CONNECT)
+                .withHeader("accept-version", "1.0,1.1,2.0")
+                .withHeader("host", "mydomain.org")
+                .withHeader("login", "nice")
+                .withHeader("passcode", "evenbetter")
+
+                .withBody("This is an example body without any bad chars!");
+
+        String payload = frame.toString();
+        payload += "THIS IS AFTER THE NULL BYTE SO IT HAS TO BE IGNORED!";
+
+        StompFrameParser parser = new StompFrameParser();
+
+        StompFrame frameParsed = parser.parse(payload);
+
+        assertEquals("Body was not correct!", frame.getBody(), frameParsed.getBody()  );
+    }
+
+
 
 }
