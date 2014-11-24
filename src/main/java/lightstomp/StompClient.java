@@ -5,10 +5,8 @@ import lightstomp.stompSocket.IStompSocket;
 import lightstomp.ws.StompWebSocket;
 
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * A simple STOMP client.
@@ -28,10 +26,10 @@ public class StompClient {
 
 
     private final IStompSocket socket;
-    private final Map<String, List<MessageListener>> subscriptionMap = new HashMap<>();
+    private final SubscriptionRouter subscriptionRouter = new SubscriptionRouter();
 
     private boolean isConnected = false;
-
+    private List<ISTOMPListener> listeners = new ArrayList<>();
 
     /**
      * Creates a new StompClient using the given socket
@@ -43,7 +41,8 @@ public class StompClient {
                 new ISocketListener(){
                     @Override
                     public void connected() {
-                        // The Socket has connected
+                        // The underling socket has connected, now we can connect with the
+                        // STOMP protocol
                         stompConnect("admin", "admin");
                     }
 
@@ -63,6 +62,10 @@ public class StompClient {
         this.socket.connect();
     }
 
+    public void addListener(ISTOMPListener listener){
+        listeners.add(listener);
+    }
+
     /**
      * Returns true if the STOMP protocol has had a successful handshake
      * @return
@@ -75,32 +78,21 @@ public class StompClient {
         StompFrame request = new StompFrame(
                 FrameType.SEND, channel)
                 .withBody(message);
-        socket.sendFrame(request);
+        sendStompFrame(request);
     }
 
 
     public void subscribe(String channel, MessageListener listener){
+        String subscriptionId = UUID.randomUUID().toString();
 
-        String id = "0";// TODO
-
-        StompFrame request = new StompFrame(FrameType.SUBSCRIBE)
-                .withHeader("id", "0")
+        StompFrame subscriptionRequest = new StompFrame(FrameType.SUBSCRIBE)
+                .withHeader("id", subscriptionId)
                 .withHeader("destination", channel)
+                .withHeader("ack", "auto") // The client does not send ACK for received messages
                 ;
+        sendStompFrame(subscriptionRequest);
 
-        mapSubscription(channel + id, listener);
-
-        socket.sendFrame(request);
-    }
-
-
-    private void mapSubscription(String subscriptionId, MessageListener listener){
-        List<MessageListener> listeners = subscriptionMap.get(subscriptionId);
-        if(listeners == null){
-            listeners = new ArrayList<>();
-            subscriptionMap.put(subscriptionId, listeners);
-        }
-        listeners.add(listener);
+        subscriptionRouter.register(channel, subscriptionId, listener);
     }
 
 
@@ -113,6 +105,10 @@ public class StompClient {
                 .withHeader("login", user)
                 .withHeader("passcode", password);
 
+        sendStompFrame(request);
+    }
+
+    private void sendStompFrame(StompFrame request){
         socket.sendFrame(request);
     }
 
@@ -121,6 +117,9 @@ public class StompClient {
      * @param frame
      */
     private void stompFrameReceived(StompFrame frame){
+
+        System.out.println("Received Stompframe " + frame);
+
         switch (frame.getType()){
 
             case CONNECTED:
@@ -142,7 +141,12 @@ public class StompClient {
     }
 
     private void handleServerMessage(StompFrame frame) {
-        // TODO
+        String channel = frame.getHeaderValue("destination");
+        if(channel != null){
+            subscriptionRouter.routeMessage(channel, frame.getBody());
+        }else{
+            System.err.println("Message frame was missing destination!");
+        }
     }
 
     private void handleServerReceipt(StompFrame frame) {
@@ -156,6 +160,11 @@ public class StompClient {
 
     private void handleServerConnected(StompFrame frame) {
         isConnected = true;
+        fireAll(l -> l.stompConnected());
+    }
+
+    private void fireAll(Consumer<ISTOMPListener> action){
+        listeners.forEach(action);
     }
 
 

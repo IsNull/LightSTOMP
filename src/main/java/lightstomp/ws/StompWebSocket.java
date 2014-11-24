@@ -45,7 +45,14 @@ public class StompWebSocket implements IStompSocket {
                     session.addMessageHandler(new MessageHandler.Whole<byte[]>() {
                         @Override
                         public void onMessage(byte[]  message) {
-                            onWebSocketMessageReceived(message);
+                            onWebSocketMessageReceivedBinary(message);
+                        }
+                    });
+
+                    session.addMessageHandler(new MessageHandler.Whole<String>() {
+                        @Override
+                        public void onMessage(String  message) {
+                            onWebSocketMessageReceivedText(message);
                         }
                     });
 
@@ -81,7 +88,8 @@ public class StompWebSocket implements IStompSocket {
         Session session = webSession;
         if(session != null && session.isOpen()){
             try {
-                session.getBasicRemote().sendBinary(frame.toByteBuffer());
+                //session.getBasicRemote().sendBinary(frame.toByteBuffer());
+                session.getBasicRemote().sendText(frame.toString());
             } catch (IOException e) {
                 e.printStackTrace(); // TODO
             }
@@ -89,8 +97,7 @@ public class StompWebSocket implements IStompSocket {
     }
 
 
-    private void onWebSocketMessageReceived(byte[] message){
-        System.out.println("Received message: "+message); // TODO
+    private void onWebSocketMessageReceivedBinary(byte[] message){
         StompFrame frame = null;
         try {
 
@@ -105,6 +112,23 @@ public class StompWebSocket implements IStompSocket {
             e.printStackTrace();
         }
     }
+
+    private void onWebSocketMessageReceivedText(String message){
+        StompFrame frame = null;
+        try {
+
+            frame = parser.parse(message);
+
+            if(listener != null) {
+                listener.onStompFrameReceived(frame);
+            }
+
+        } catch (StompParseException e) {
+            // TODO
+            e.printStackTrace();
+        }
+    }
+
 
 
 

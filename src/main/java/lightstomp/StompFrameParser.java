@@ -23,11 +23,17 @@ public class StompFrameParser {
         public T left;
     }
 
-    public StompFrame parse(ByteBuffer data) throws StompParseException{
+    public StompFrame parse(String data) throws StompParseException {
+        if(data == null) throw new IllegalArgumentException("data must not be NULL!");
+        return parse(data.getBytes(encoding));
+    }
+
+    public StompFrame parse(ByteBuffer data) throws StompParseException {
+        if(data == null) throw new IllegalArgumentException("data must not be NULL!");
         return parse(data.array());
     }
 
-    public StompFrame parse(byte[] data) throws StompParseException{
+    public StompFrame parse(byte[] data) throws StompParseException {
 
         if(data == null) throw new IllegalArgumentException("data must not be NULL!");
 

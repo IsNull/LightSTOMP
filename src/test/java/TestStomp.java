@@ -1,4 +1,5 @@
 
+import lightstomp.ISTOMPListener;
 import lightstomp.MessageListener;
 import lightstomp.StompClient;
 import org.glassfish.tyrus.client.ClientManager;
@@ -23,31 +24,46 @@ public class TestStomp {
         URI uri3 = new URI("ws://localhost:8080/ws/rest/echo2");
         //test.testWebSocket(uri3);
 
-        test.testStompEcho();
+        test.testStompEcho("ws://localhost:8080/ws/rest/messages");
     }
 
-    private void testStompEcho()  {
-        // ws://localhost:8080/ws/rest/messages
+    private String raceTrackId = "simulator1";
+
+    private void testStompEcho(String url)  {
         try {
-            StompClient stompClient = StompClient.stompOverWebSocket("ws://localhost:8080/ws/rest/messages");
+            System.out.println("Connecting to " +url);
+            StompClient stompClient = StompClient.stompOverWebSocket(url);
 
-            if(stompClient.isConnected()){
+            stompClient.addListener(new ISTOMPListener() {
+                @Override
+                public void stompConnected() {
 
-                stompClient.subscribe("/topic/echo", new MessageListener() {
-                    @Override
-                    public void messageReceived(String message) {
+                    System.out.println("Stomp connected!");
+
+                    stompClient.subscribe("/topic/echo", message -> {
                         System.out.println("STOMP server sent: " + message);
-                    }
-                });
+                    });
 
-                stompClient.stompSend("/echo", "hello world!");
-            }
+                    stompClient.subscribe("/topic/simulators/"+ raceTrackId + "/news", message -> {
+                        System.out.println("Got News: " + message);
+                    });
+
+                    stompClient.stompSend("/echo", "hello world!");
+                }
+
+                @Override
+                public void stompClosed() {
+
+                }
+            });
+
 
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
 
-
+        System.out.println("Stomp client running... " +
+                "Press any key to quit.");
         try {
             System.in.read();
         } catch (IOException e) {
