@@ -1,4 +1,4 @@
-package lightstomp;
+package lightstomp.util;
 
 /**
  * Created by IsNull on 23.11.14.
@@ -6,6 +6,11 @@ package lightstomp;
 public class ByteUtil {
     final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
+    /**
+     * Turns a byte array into a hex-string representation
+     * @param bytes
+     * @return
+     */
     public static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for ( int j = 0; j < bytes.length; j++ ) {
@@ -16,6 +21,11 @@ public class ByteUtil {
         return new String(hexChars);
     }
 
+    /**
+     * Turns a byte array into a hex-string representation, each byte is separated by a space
+     * @param bytes
+     * @return
+     */
     public static String bytesToHexSpaced(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 3];
         for ( int j = 0; j < bytes.length; j++ ) {

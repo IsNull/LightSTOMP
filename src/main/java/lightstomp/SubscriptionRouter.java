@@ -3,12 +3,10 @@ package lightstomp;
 import java.util.*;
 
 /**
- *
- *
- *
- * Created by paba on 11/24/14.
+ * Manages listener registration and mapping.
+ * Routes STOMP Messages to the registered listener.
  */
-public class SubscriptionRouter {
+class SubscriptionRouter {
 
     private final Map<String, MessageListener> uuidToListenerMap = new HashMap<>();
     private final Map<String, List<MessageListener>> channelToListenerMap = new HashMap<>();
@@ -34,6 +32,12 @@ public class SubscriptionRouter {
         listeners.add(listener);
     }
 
+    /**
+     * Routes the given message to the given channel and notify all
+     * listeners of this channel.
+     * @param channel
+     * @param message
+     */
     public synchronized void routeMessage(String channel, String message){
         List<MessageListener> listeners = channelToListenerMap.get(channel);
         if(listeners != null){

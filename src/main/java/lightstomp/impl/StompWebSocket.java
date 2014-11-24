@@ -1,9 +1,8 @@
-package lightstomp.ws;
+package lightstomp.impl;
 
 
 
 import lightstomp.StompFrame;
-import lightstomp.StompFrameParser;
 import lightstomp.StompParseException;
 import lightstomp.stompSocket.ISocketListener;
 import lightstomp.stompSocket.IStompSocket;

@@ -1,7 +1,7 @@
 package lightstomp;
 
 /**
- * Created by paba on 11/21/14.
+ * Exception which is thrown when a STOMP frame could not be parsed.
  */
 public class StompParseException extends Exception {
 

@@ -1,8 +1,12 @@
 package lightstomp;
 
 /**
- * Created by paba on 11/17/14.
+ * Listener for STOMP messages
  */
 public interface MessageListener {
+    /**
+     * Occurs when a STOMP message is received by the client.
+     * @param message
+     */
     void messageReceived(String message);
 }

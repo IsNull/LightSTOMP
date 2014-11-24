@@ -2,7 +2,9 @@ package lightstomp;
 
 import lightstomp.stompSocket.ISocketListener;
 import lightstomp.stompSocket.IStompSocket;
-import lightstomp.ws.StompWebSocket;
+import lightstomp.impl.StompWebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URISyntaxException;
 import java.util.*;
@@ -14,13 +16,16 @@ import java.util.function.Consumer;
  */
 public class StompClient {
 
+    private final static Logger LOG = LoggerFactory.getLogger(StompClient.class);
+
+
     /**
      * Builds a Stomp Client which uses STOMP over Websocket
      * @param uri
      * @return
      * @throws URISyntaxException
      */
-    public static StompClient stompOverWebSocket(String uri) throws URISyntaxException {
+    public static StompClient connectOverWebSocket(String uri) throws URISyntaxException {
         return new StompClient(new StompWebSocket(uri));
     }
 
@@ -118,7 +123,7 @@ public class StompClient {
      */
     private void stompFrameReceived(StompFrame frame){
 
-        System.out.println("Received Stompframe " + frame);
+        LOG.info("Received Stompframe " + frame);
 
         switch (frame.getType()){
 
@@ -137,6 +142,9 @@ public class StompClient {
             case MESSAGE:
                 handleServerMessage(frame);
                 break;
+
+            default:
+                LOG.error("Unexpected STOMPFrame-COMMAND received: " + frame.getType());
         }
     }
 
@@ -145,17 +153,18 @@ public class StompClient {
         if(channel != null){
             subscriptionRouter.routeMessage(channel, frame.getBody());
         }else{
-            System.err.println("Message frame was missing destination!");
+            LOG.warn("Message frame was missing destination!");
         }
     }
 
     private void handleServerReceipt(StompFrame frame) {
-        // TODO
+        LOG.error("Receipt handling not supported in this version!");
     }
 
     private void handleServerError(StompFrame frame) {
         // TODO
-        System.err.println("Received Error!" + frame.getHeaderValue("message"));
+        LOG.warn("Received Error - connection will die now!"  + System.lineSeparator() + frame);
+
     }
 
     private void handleServerConnected(StompFrame frame) {

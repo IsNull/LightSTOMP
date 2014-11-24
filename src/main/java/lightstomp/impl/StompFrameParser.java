@@ -1,4 +1,9 @@
-package lightstomp;
+package lightstomp.impl;
+
+import lightstomp.FrameType;
+import lightstomp.StompFrame;
+import lightstomp.StompParseException;
+import lightstomp.util.Pair;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -10,18 +15,9 @@ import java.util.Arrays;
  *
  * Created by paba on 11/21/14.
  */
-public class StompFrameParser {
+class StompFrameParser {
 
     private final Charset encoding = Charset.forName("UTF-8");
-
-    class Pair<T> {
-        public Pair(T v, T v2){
-            right = v;
-            left = v2;
-        }
-        public T right;
-        public T left;
-    }
 
     public StompFrame parse(String data) throws StompParseException {
         if(data == null) throw new IllegalArgumentException("data must not be NULL!");

@@ -1,6 +1,8 @@
-package lightstomp;
+package lightstomp.impl;
 
-import org.junit.Ignore;
+import lightstomp.FrameType;
+import lightstomp.StompFrame;
+import lightstomp.StompParseException;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;

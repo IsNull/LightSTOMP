@@ -1,11 +1,18 @@
 package lightstomp;
 
 /**
- * Created by paba on 11/24/14.
+ * Provides events concerning the STOMP connection and protocol.
+ *
  */
 public interface ISTOMPListener {
 
+    /**
+     * Occurs when the STOMP protocol is in CONNECTED state
+     */
     void stompConnected();
 
+    /**
+     * Occurs when the STOMP protocol is in DISCONNECTED state
+     */
     void stompClosed();
 }

@@ -1,8 +1,9 @@
 
 import lightstomp.ISTOMPListener;
-import lightstomp.MessageListener;
 import lightstomp.StompClient;
 import org.glassfish.tyrus.client.ClientManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -13,6 +14,9 @@ import java.net.URISyntaxException;
  * Created by paba on 11/17/14.
  */
 public class TestStomp {
+
+    private final static Logger LOG = LoggerFactory.getLogger(TestStomp.class);
+
 
     public static void main(String[] args) throws URISyntaxException {
         TestStomp test = new TestStomp();
@@ -31,21 +35,21 @@ public class TestStomp {
 
     private void testStompEcho(String url)  {
         try {
-            System.out.println("Connecting to " +url);
-            StompClient stompClient = StompClient.stompOverWebSocket(url);
+            LOG.info("Connecting to " + url);
+            StompClient stompClient = StompClient.connectOverWebSocket(url);
 
             stompClient.addListener(new ISTOMPListener() {
                 @Override
                 public void stompConnected() {
 
-                    System.out.println("Stomp connected!");
+                    LOG.info("Stomp connected!");
 
                     stompClient.subscribe("/topic/echo", message -> {
-                        System.out.println("STOMP server sent: " + message);
+                        LOG.info("STOMP server sent: " + message);
                     });
 
                     stompClient.subscribe("/topic/simulators/"+ raceTrackId + "/news", message -> {
-                        System.out.println("Got News: " + message);
+                        LOG.info("Got News: " + message);
                     });
 
                     stompClient.stompSend("/echo", "hello world!");
@@ -83,26 +87,22 @@ public class TestStomp {
                 @Override
                 public void onOpen(Session session, EndpointConfig config) {
                     try {
-                        session.addMessageHandler(new MessageHandler.Whole<String>() {
-
-                            @Override
-                            public void onMessage(String message) {
-                                System.out.println("Received message: " + message);
-                            }
-                        });
+                        session.addMessageHandler((MessageHandler.Whole<String>) message -> LOG.info("Received message: " + message));
                         session.getBasicRemote().sendText(SENT_MESSAGE);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        LOG.error("Failed to send message", e);
                     }
                 }
             }, cec, testEchoUrl);
+
+            // wait
             try {
                 System.in.read();
             } catch (IOException e) {
-                e.printStackTrace();
+                LOG.error("", e);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("", e);
         }
     }
 
