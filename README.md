@@ -23,13 +23,9 @@ How to use
  stompClient.addListener(new ISTOMPListener() {
      @Override
      public void stompConnected() {
-
+        
          stompClient.subscribe("/topic/echo", message -> {
              LOG.info("STOMP server sent: " + message);
-         });
-
-         stompClient.subscribe("/topic/simulators/"+ raceTrackId + "/news", message -> {
-             LOG.info("Got News: " + message);
          });
 
          stompClient.stompSend("/echo", "hello world!");
