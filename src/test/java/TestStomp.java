@@ -34,37 +34,34 @@ public class TestStomp {
     private String raceTrackId = "simulator1";
 
     private void testStompEcho(String url)  {
-        try {
             LOG.info("Connecting to " + url);
-            StompClient stompClient = StompClient.connectOverWebSocket(url);
-
-            stompClient.addListener(new ISTOMPListener() {
+            StompClient.connectOverWebSocket(url, new ISTOMPListener() {
                 @Override
-                public void stompConnected() {
-
+                public void connectionSuccess(StompClient connection) {
                     LOG.info("Stomp connected!");
 
-                    stompClient.subscribe("/topic/echo", message -> {
+                    connection.subscribe("/topic/echo", message -> {
+                        // Simple echo subscription to test
                         LOG.info("STOMP server sent: " + message);
                     });
 
-                    stompClient.subscribe("/topic/simulators/"+ raceTrackId + "/news", message -> {
+                    connection.subscribe("/topic/simulators/"+ raceTrackId + "/news", message -> {
                         LOG.info("Got News: " + message);
                     });
 
-                    stompClient.stompSend("/echo", "hello world!");
+                    connection.stompSend("/stomp/msg", "hello world!");
                 }
 
                 @Override
-                public void stompClosed() {
+                public void connectionFailed() {
+                    LOG.error("Could not connect!");
+                }
 
+                @Override
+                public void disconnected() {
+                    LOG.error("Lost connection!");
                 }
             });
-
-
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
 
         System.out.println("Stomp client running... " +
                 "Press any key to quit.");

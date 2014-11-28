@@ -5,8 +5,8 @@
 
     <groupId>light-stomp</groupId>
     <artifactId>light-stomp-client</artifactId>
-    <packaging>jar</packaging>
     <version>0.1.0</version>
+    <packaging>jar</packaging>
     <name>LightSTOMP</name>
     <description>A lightweight STOMP Client for Java supporting WebSockets</description>
 
@@ -17,6 +17,14 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <distributionManagement>
+        <repository>
+            <id>bintray-isnull-maven-LightSTOMP</id>
+            <name>isnull-maven-LightSTOMP</name>
+            <url>https://api.bintray.com/maven/isnull/maven/LightSTOMP</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
 

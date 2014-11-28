@@ -7,6 +7,8 @@ import lightstomp.StompParseException;
 import lightstomp.stompSocket.ISocketListener;
 import lightstomp.stompSocket.IStompSocket;
 import org.glassfish.tyrus.client.ClientManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -20,6 +22,9 @@ import java.net.URISyntaxException;
  */
 public class StompWebSocket implements IStompSocket {
 
+    private final static Logger LOG = LoggerFactory.getLogger(StompWebSocket.class);
+
+
     private final URI server;
     private Session webSession;
     private ISocketListener listener;
@@ -28,11 +33,14 @@ public class StompWebSocket implements IStompSocket {
 
 
 
-    public StompWebSocket(String url) throws URISyntaxException  {
-        server = new URI(url);
+    public StompWebSocket(URI url)   {
+        server = url;
     }
 
-    public void connect(){
+    public void connect(ISocketListener listener){
+
+        this.listener = listener;
+
         final ClientEndpointConfig cec = ClientEndpointConfig.Builder.create().build();
         ClientManager client = ClientManager.createClient();
         try {
@@ -41,19 +49,11 @@ public class StompWebSocket implements IStompSocket {
                 @Override
                 public void onOpen(Session session, EndpointConfig config) {
                     webSession = session;
-                    session.addMessageHandler(new MessageHandler.Whole<byte[]>() {
-                        @Override
-                        public void onMessage(byte[]  message) {
-                            onWebSocketMessageReceivedBinary(message);
-                        }
-                    });
+                    session.addMessageHandler((MessageHandler.Whole<byte[]>) message
+                            -> onWebSocketMessageReceivedBinary(message));
 
-                    session.addMessageHandler(new MessageHandler.Whole<String>() {
-                        @Override
-                        public void onMessage(String  message) {
-                            onWebSocketMessageReceivedText(message);
-                        }
-                    });
+                    session.addMessageHandler((MessageHandler.Whole<String>) message
+                            -> onWebSocketMessageReceivedText(message));
 
                     listener.connected();
 
@@ -61,15 +61,11 @@ public class StompWebSocket implements IStompSocket {
             }, cec, server);
 
         } catch (DeploymentException | IOException e) {
-            e.printStackTrace(); // TODO
-            listener.disconnected();
+            LOG.error("Failed to connect to "+server+" -> " + e.getMessage() );
+            listener.connectionFailed();
         }
     }
 
-    @Override
-    public void setFrameListener(ISocketListener listener){
-        this.listener = listener;
-    }
 
     @Override
     public String getHost() {
@@ -90,7 +86,7 @@ public class StompWebSocket implements IStompSocket {
                 //session.getBasicRemote().sendBinary(frame.toByteBuffer());
                 session.getBasicRemote().sendText(frame.toString());
             } catch (IOException e) {
-                e.printStackTrace(); // TODO
+                LOG.error("Failed to send STOMP Frame!", e);
             }
         }
     }
@@ -107,8 +103,7 @@ public class StompWebSocket implements IStompSocket {
             }
 
         } catch (StompParseException e) {
-            // TODO
-            e.printStackTrace();
+            LOG.error("Illegal STOMP Frame received!", e);
         }
     }
 
@@ -123,8 +118,7 @@ public class StompWebSocket implements IStompSocket {
             }
 
         } catch (StompParseException e) {
-            // TODO
-            e.printStackTrace();
+            LOG.error("Illegal STOMP Frame received!", e);
         }
     }
 

@@ -16,19 +16,13 @@ public interface IStompSocket {
     /**
      *
      */
-    void connect();
+    void connect(ISocketListener listener);
 
     /**
      * Send the given Frame
      * @param request
      */
     void sendFrame(StompFrame request);
-
-    /**
-     *
-     * @param listener
-     */
-    void setFrameListener(ISocketListener listener);
 
     /**
      * Get the host to which this socket is connected

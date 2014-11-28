@@ -7,12 +7,18 @@ package lightstomp;
 public interface ISTOMPListener {
 
     /**
-     * Occurs when the STOMP protocol is in CONNECTED state
+     * Occurs when a STOMP connection could be created.
      */
-    void stompConnected();
+    void connectionSuccess(StompClient connection);
 
     /**
-     * Occurs when the STOMP protocol is in DISCONNECTED state
+     * Occurs when the connection could NOT be established.
      */
-    void stompClosed();
+    void connectionFailed();
+
+    /**
+     * Occurs when the previously working connection is lost.
+     */
+    void disconnected();
+
 }

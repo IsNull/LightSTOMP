@@ -6,6 +6,7 @@ import lightstomp.impl.StompWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.Consumer;
@@ -25,50 +26,60 @@ public class StompClient {
      * @return
      * @throws URISyntaxException
      */
-    public static StompClient connectOverWebSocket(String uri) throws URISyntaxException {
-        return new StompClient(new StompWebSocket(uri));
+    public static StompClient connectOverWebSocket(String uri, ISTOMPListener listener) {
+        StompWebSocket socket = null;
+        try {
+            URI serverUrl = new URI(uri);
+            socket = new StompWebSocket(serverUrl);
+        } catch (URISyntaxException e) {
+            LOG.error("Could not parse URI!",e);
+            listener.connectionFailed();
+        }
+        return new StompClient(socket, listener);
     }
 
 
     private final IStompSocket socket;
     private final SubscriptionRouter subscriptionRouter = new SubscriptionRouter();
+    private final ISTOMPListener listener;
 
     private boolean isConnected = false;
-    private List<ISTOMPListener> listeners = new ArrayList<>();
+
 
     /**
      * Creates a new StompClient using the given socket
      * @param socket
      */
-    private StompClient(IStompSocket socket){
+    private StompClient(IStompSocket socket, ISTOMPListener listener){
+        this.listener = listener;
         this.socket = socket;
-        socket.setFrameListener(
-                new ISocketListener(){
-                    @Override
-                    public void connected() {
-                        // The underling socket has connected, now we can connect with the
-                        // STOMP protocol
-                        stompConnect("admin", "admin");
-                    }
 
-                    @Override
-                    public void onStompFrameReceived(StompFrame frame) {
-                        stompFrameReceived(frame);
-                    }
+        this.socket.connect(new ISocketListener(){
+            @Override
+            public void connected() {
+                // The underling socket has connected, now we can connect with the
+                // STOMP protocol
+                stompConnect("admin", "admin");
+            }
 
-                    @Override
-                    public void disconnected() {
-                        // The underling socket died
-                        isConnected = false;
-                    }
-                }
-        );
+            @Override
+            public void onStompFrameReceived(StompFrame frame) {
+                stompFrameReceived(frame);
+            }
 
-        this.socket.connect();
-    }
+            @Override
+            public void disconnected() {
+                // The underling socket died
+                LOG.warn("Underling Websocket has closed -> STOMP disconnected.");
+                handleServerDisconnected();
+            }
 
-    public void addListener(ISTOMPListener listener){
-        listeners.add(listener);
+            @Override
+            public void connectionFailed() {
+                LOG.warn("Underling Websocket could not connect!");
+                handleCanNotConnect();
+            }
+        });
     }
 
     /**
@@ -164,16 +175,26 @@ public class StompClient {
     private void handleServerError(StompFrame frame) {
         // TODO
         LOG.warn("Received Error - connection will die now!"  + System.lineSeparator() + frame);
-
+        handleServerDisconnected();
     }
 
     private void handleServerConnected(StompFrame frame) {
         isConnected = true;
-        fireAll(l -> l.stompConnected());
+        fireAll(l -> l.connectionSuccess(this));
+    }
+
+    private void handleServerDisconnected(){
+        isConnected = false;
+        fireAll(l -> l.disconnected());
+    }
+
+    private void handleCanNotConnect() {
+        isConnected = false;
+        fireAll(l -> l.connectionFailed());
     }
 
     private void fireAll(Consumer<ISTOMPListener> action){
-        listeners.forEach(action);
+        action.accept(listener);
     }
 
 
