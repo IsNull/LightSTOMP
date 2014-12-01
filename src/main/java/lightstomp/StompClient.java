@@ -19,7 +19,6 @@ public class StompClient {
 
     private final static Logger LOG = LoggerFactory.getLogger(StompClient.class);
 
-
     /**
      * Builds a Stomp Client which uses STOMP over Websocket
      * @param uri
@@ -27,6 +26,16 @@ public class StompClient {
      * @throws URISyntaxException
      */
     public static StompClient connectOverWebSocket(String uri, ISTOMPListener listener) {
+        return connectOverWebSocket(uri, null, null, listener);
+    }
+
+    /**
+     * Builds a Stomp Client which uses STOMP over Websocket
+     * @param uri
+     * @return
+     * @throws URISyntaxException
+     */
+    public static StompClient connectOverWebSocket(String uri, String user, String password, ISTOMPListener listener) {
         StompWebSocket socket = null;
         try {
             URI serverUrl = new URI(uri);
@@ -35,7 +44,7 @@ public class StompClient {
             LOG.error("Could not parse URI!",e);
             listener.connectionFailed();
         }
-        return new StompClient(socket, listener);
+        return new StompClient(socket, user, password, listener);
     }
 
 
@@ -48,9 +57,12 @@ public class StompClient {
 
     /**
      * Creates a new StompClient using the given socket
-     * @param socket
+     * @param socket A STOMP socket implementation to wrap this client around.
+     * @param user The STOMP user (can be left null if not required)
+     * @param password The password for the STOMP user
+     * @param listener A listener which receives basic protocol events such as connected / disconnected.
      */
-    private StompClient(IStompSocket socket, ISTOMPListener listener){
+    private StompClient(IStompSocket socket, String user, String password, ISTOMPListener listener){
         this.listener = listener;
         this.socket = socket;
 
@@ -59,7 +71,7 @@ public class StompClient {
             public void connected() {
                 // The underling socket has connected, now we can connect with the
                 // STOMP protocol
-                stompConnect("admin", "admin");
+                stompConnect(user, password);
             }
 
             @Override
@@ -90,6 +102,11 @@ public class StompClient {
         return isConnected;
     }
 
+    /**
+     * Send the given text message to the given channel
+     * @param channel
+     * @param message
+     */
     public void stompSend(String channel, String message){
         StompFrame request = new StompFrame(
                 FrameType.SEND, channel)
@@ -97,8 +114,16 @@ public class StompClient {
         sendStompFrame(request);
     }
 
-
+    /**
+     * Subscribe to the given channel.
+     * For all subsequent messages sent to the specified channel, the given message listener will be invoked.
+     * @param channel
+     * @param listener
+     */
     public void subscribe(String channel, MessageListener listener){
+
+        // We use a global unique id for the subscription to simplify subscription mapping on
+        // our side.
         String subscriptionId = UUID.randomUUID().toString();
 
         StompFrame subscriptionRequest = new StompFrame(FrameType.SUBSCRIBE)
@@ -117,9 +142,14 @@ public class StompClient {
     private void stompConnect(String user, String password) {
         StompFrame request = new StompFrame(FrameType.CONNECT)
                 .withHeader("accept-version", "1.0,1.1,2.0")
-                .withHeader("host", socket.getHost())
-                .withHeader("login", user)
-                .withHeader("passcode", password);
+                .withHeader("host", socket.getHost());
+
+        if(user != null) {
+            request.withHeader("login", user);
+        }
+        if(password != null) {
+            request.withHeader("passcode", password);
+        }
 
         sendStompFrame(request);
     }

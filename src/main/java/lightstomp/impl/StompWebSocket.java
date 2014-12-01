@@ -49,15 +49,32 @@ public class StompWebSocket implements IStompSocket {
                 @Override
                 public void onOpen(Session session, EndpointConfig config) {
                     webSession = session;
-                    session.addMessageHandler((MessageHandler.Whole<byte[]>) message
-                            -> onWebSocketMessageReceivedBinary(message));
+                    session.addMessageHandler(new MessageHandler.Whole<byte[]>(){ // WARNING: DO NOT USE LAMBDA HERE!
+                        @Override
+                        public void onMessage(byte[] bytes) {
+                            onWebSocketMessageReceivedBinary(bytes);
+                        }
+                    });
 
-                    session.addMessageHandler((MessageHandler.Whole<String>) message
-                            -> onWebSocketMessageReceivedText(message));
+                    session.addMessageHandler(new MessageHandler.Whole<String>(){ // WARNING: DO NOT USE LAMBDA HERE!
+                        @Override
+                        public void onMessage(String s) {
+                            onWebSocketMessageReceivedText(s);
+                        }
+                    });
 
                     listener.connected();
 
                 }
+
+                public void onClose(javax.websocket.Session session, javax.websocket.CloseReason closeReason) {
+                    LOG.warn("Closed websocket: " + closeReason.getReasonPhrase());
+                }
+
+                public void onError(javax.websocket.Session session, java.lang.Throwable thr) {
+                    LOG.error("Websocket Error : ", thr);
+                }
+
             }, cec, server);
 
         } catch (DeploymentException | IOException e) {

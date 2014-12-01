@@ -26,9 +26,12 @@ public class TestStomp {
         URI uri1 = new URI("ws://echo.websocket.org");
         URI uri2 = new URI("wss://echo.websocket.org");
         URI uri3 = new URI("ws://localhost:8080/ws/rest/echo2");
-        //test.testWebSocket(uri3);
 
+        //test.testWebSocket(uri3);
         test.testStompEcho("ws://localhost:8080/ws/rest/messages");
+
+        //test.testStompEcho(uri1.toString());
+        //test.testWebSocket(uri1);
     }
 
     private String raceTrackId = "simulator1";
@@ -79,17 +82,35 @@ public class TestStomp {
             final ClientEndpointConfig cec = ClientEndpointConfig.Builder.create().build();
 
             ClientManager client = ClientManager.createClient();
+
+            LOG.info("Connecting to " + testEchoUrl);
+
             client.connectToServer(new Endpoint() {
 
                 @Override
                 public void onOpen(Session session, EndpointConfig config) {
                     try {
-                        session.addMessageHandler((MessageHandler.Whole<String>) message -> LOG.info("Received message: " + message));
+                        session.addMessageHandler(new MessageHandler.Whole<String>(){
+                            @Override
+                            public void onMessage(String s) {
+                                LOG.info("Received message: " + s);
+                            }
+                        });
+
                         session.getBasicRemote().sendText(SENT_MESSAGE);
                     } catch (IOException e) {
                         LOG.error("Failed to send message", e);
                     }
                 }
+
+                public void onClose(javax.websocket.Session session, javax.websocket.CloseReason closeReason) {
+                    LOG.error("Closed websocket: " + closeReason.getReasonPhrase());
+                }
+
+                public void onError(javax.websocket.Session session, java.lang.Throwable thr) {
+                    LOG.error("onError websocket: ", thr);
+                }
+
             }, cec, testEchoUrl);
 
             // wait
