@@ -68,18 +68,18 @@ public class StompWebSocket implements IStompSocket {
                 }
 
                 public void onClose(javax.websocket.Session session, javax.websocket.CloseReason closeReason) {
-                    LOG.warn("Closed websocket: " + closeReason.getReasonPhrase());
+                    listener.closed(closeReason.getReasonPhrase());
                 }
 
                 public void onError(javax.websocket.Session session, java.lang.Throwable thr) {
-                    LOG.error("Websocket Error : ", thr);
+                    listener.closed(thr.getClass().getCanonicalName() + ": " + thr.getMessage());
                 }
 
             }, cec, server);
 
         } catch (DeploymentException | IOException e) {
             LOG.error("Failed to connect to "+server+" -> " + e.getMessage() );
-            listener.connectionFailed();
+            listener.connectionFailed(e);
         }
     }
 

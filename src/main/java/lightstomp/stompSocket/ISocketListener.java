@@ -19,13 +19,13 @@ public interface ISocketListener {
     void onStompFrameReceived(StompFrame frame);
 
     /**
-     * Occurs when the connection to the socket is lost
+     * Occurs when the socket has been closed
      */
-    void disconnected();
+    void closed(String reason);
 
     /**
      * Occrus when no connection to the socket could be etablished.
      */
-    void connectionFailed();
+    void connectionFailed(Throwable e);
 
 }

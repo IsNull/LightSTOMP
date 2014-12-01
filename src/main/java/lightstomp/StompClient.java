@@ -80,15 +80,15 @@ public class StompClient {
             }
 
             @Override
-            public void disconnected() {
+            public void closed(String reason) {
                 // The underling socket died
-                LOG.warn("Underling Websocket has closed -> STOMP disconnected.");
+                LOG.warn("Underling Websocket has closed: " + reason);
                 handleServerDisconnected();
             }
 
             @Override
-            public void connectionFailed() {
-                LOG.warn("Underling Websocket could not connect!");
+            public void connectionFailed(Throwable e) {
+                LOG.warn("Underling Websocket could not connect!", e);
                 handleCanNotConnect();
             }
         });
