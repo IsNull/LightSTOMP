@@ -18,7 +18,7 @@ How to use
 ----------
 
 ```java
-StompClient.connectOverWebSocket(url, new ISTOMPListener() {
+StompClient.connectOverWebSocket("ws://myServer.com/messages", new ISTOMPListener() {
     @Override
     public void connectionSuccess(StompClient connection) {
         // Successful connected
