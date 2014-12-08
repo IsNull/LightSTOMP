@@ -5,7 +5,7 @@
 
     <groupId>light-stomp</groupId>
     <artifactId>light-stomp-client</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
     <packaging>jar</packaging>
     <name>LightSTOMP</name>
     <description>A lightweight STOMP Client for Java supporting WebSockets</description>
