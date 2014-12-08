@@ -164,7 +164,7 @@ public class StompClient {
      */
     private void stompFrameReceived(StompFrame frame){
 
-        LOG.info("Received Stompframe " + frame);
+        LOG.trace("Received Stompframe " + frame);
 
         switch (frame.getType()){
 
@@ -203,7 +203,6 @@ public class StompClient {
     }
 
     private void handleServerError(StompFrame frame) {
-        // TODO
         LOG.warn("Received Error - connection will die now!"  + System.lineSeparator() + frame);
         handleServerDisconnected();
     }
