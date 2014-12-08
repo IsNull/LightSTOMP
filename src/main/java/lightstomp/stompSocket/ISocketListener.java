@@ -24,8 +24,8 @@ public interface ISocketListener {
     void closed(String reason);
 
     /**
-     * Occrus when no connection to the socket could be etablished.
+     * Occrus when no connection to the socket could be established.
      */
-    void connectionFailed(Throwable e);
+    void connectionFailed(Throwable exception);
 
 }

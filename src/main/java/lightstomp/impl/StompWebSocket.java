@@ -68,7 +68,7 @@ public class StompWebSocket implements IStompSocket {
                 }
 
                 public void onClose(javax.websocket.Session session, javax.websocket.CloseReason closeReason) {
-                    listener.closed(closeReason.getReasonPhrase());
+                    listener.closed(closeReason.getCloseCode() +": "+ closeReason.getReasonPhrase());
                 }
 
                 public void onError(javax.websocket.Session session, java.lang.Throwable thr) {

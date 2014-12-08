@@ -36,15 +36,18 @@ public class StompClient {
      * @throws URISyntaxException
      */
     public static StompClient connectOverWebSocket(String uri, String user, String password, ISTOMPListener listener) {
-        StompWebSocket socket = null;
+        StompWebSocket socket;
         try {
+
             URI serverUrl = new URI(uri);
             socket = new StompWebSocket(serverUrl);
+            return new StompClient(socket, user, password, listener);
+
         } catch (URISyntaxException e) {
-            LOG.error("Could not parse URI!",e);
-            listener.connectionFailed();
+            LOG.debug("Could not parse URI!",e);
+            listener.connectionFailed(e);
         }
-        return new StompClient(socket, user, password, listener);
+        return null;
     }
 
 
@@ -82,14 +85,14 @@ public class StompClient {
             @Override
             public void closed(String reason) {
                 // The underling socket died
-                LOG.warn("Underling Websocket has closed: " + reason);
-                handleServerDisconnected();
+                LOG.debug("Underling Websocket has closed: " + reason);
+                handleServerDisconnected(reason);
             }
 
             @Override
             public void connectionFailed(Throwable e) {
-                LOG.warn("Underling Websocket could not connect!", e);
-                handleCanNotConnect();
+                LOG.debug("Underling Websocket could not connect!", e);
+                handleCanNotConnect(e);
             }
         });
     }
@@ -203,8 +206,8 @@ public class StompClient {
     }
 
     private void handleServerError(StompFrame frame) {
-        LOG.warn("Received Error - connection will die now!"  + System.lineSeparator() + frame);
-        handleServerDisconnected();
+        LOG.debug("Received Error - connection will die now!"  + System.lineSeparator() + frame);
+        handleServerDisconnected("STOMP ERROR FRAME: " + frame.getBody());
     }
 
     private void handleServerConnected(StompFrame frame) {
@@ -212,14 +215,14 @@ public class StompClient {
         fireAll(l -> l.connectionSuccess(this));
     }
 
-    private void handleServerDisconnected(){
+    private void handleServerDisconnected(String cause){
         isConnected = false;
-        fireAll(l -> l.disconnected());
+        fireAll(l -> l.disconnected(cause));
     }
 
-    private void handleCanNotConnect() {
+    private void handleCanNotConnect(Throwable cause) {
         isConnected = false;
-        fireAll(l -> l.connectionFailed());
+        fireAll(l -> l.connectionFailed(cause));
     }
 
     private void fireAll(Consumer<ISTOMPListener> action){

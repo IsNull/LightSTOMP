@@ -34,13 +34,52 @@ public class StompClientTest {
             }
 
             @Override
-            public void connectionFailed() {
+            public void connectionFailed(Throwable e) {
                 result.gotError = true;
                 c.countDown();
             }
 
             @Override
-            public void disconnected() {
+            public void disconnected(String reason) {
+                c.countDown();
+            }
+        });
+
+        try {
+            c.await(5000, TimeUnit.MILLISECONDS);
+
+            assertEquals("There was no error but one was expected!", result.gotError, true);
+            assertEquals("There was an success but error was expected!", result.gotSuccess, false);
+
+        } catch (InterruptedException e) {
+            assertTrue("Waited 5sec and no answer from connection.", false);
+        }
+
+
+    }
+
+    @Test
+    public void testFailedConnection2() throws StompParseException {
+
+        final TestResult result = new TestResult();
+        CountDownLatch c = new CountDownLatch(1);
+
+        // Valid domain but no ws running
+        StompClient.connectOverWebSocket("ws://google.com", new ISTOMPListener() {
+            @Override
+            public void connectionSuccess(StompClient connection) {
+                result.gotSuccess = true;
+                c.countDown();
+            }
+
+            @Override
+            public void connectionFailed(Throwable e) {
+                result.gotError = true;
+                c.countDown();
+            }
+
+            @Override
+            public void disconnected(String reason) {
                 c.countDown();
             }
         });
