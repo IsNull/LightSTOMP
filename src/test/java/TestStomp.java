@@ -57,12 +57,12 @@ public class TestStomp {
 
                 @Override
                 public void connectionFailed(Throwable e) {
-                    LOG.error("Could not connect!");
+                    LOG.error("Could not connect!", e);
                 }
 
                 @Override
                 public void disconnected(String reason) {
-                    LOG.error("Lost connection!");
+                    LOG.error("Lost connection: " + reason);
                 }
             });
 

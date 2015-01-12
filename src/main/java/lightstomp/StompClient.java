@@ -65,7 +65,7 @@ public class StompClient {
      * @param password The password for the STOMP user
      * @param listener A listener which receives basic protocol events such as connected / disconnected.
      */
-    private StompClient(IStompSocket socket, String user, String password, ISTOMPListener listener){
+    private StompClient(IStompSocket socket, final String user, final String password, ISTOMPListener listener){
         this.listener = listener;
         this.socket = socket;
 
@@ -140,8 +140,11 @@ public class StompClient {
     }
 
 
-
-
+    /**
+     * Connect to the Websocket using a HTTP header with credentials.
+     * @param user
+     * @param password
+     */
     private void stompConnect(String user, String password) {
         StompFrame request = new StompFrame(FrameType.CONNECT)
                 .withHeader("accept-version", "1.0,1.1,2.0")
@@ -166,8 +169,6 @@ public class StompClient {
      * @param frame
      */
     private void stompFrameReceived(StompFrame frame){
-
-        LOG.trace("Received Stompframe " + frame);
 
         switch (frame.getType()){
 
