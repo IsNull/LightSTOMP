@@ -18,24 +18,29 @@ How to use
 ----------
 
 ```java
- StompClient stompClient = StompClient.connectOverWebSocket("ws://localhost:8080/ws/messages");
+StompClient.connectOverWebSocket("ws://myServer.com/messages", new ISTOMPListener() {
+    @Override
+    public void connectionSuccess(StompClient connection) {
+        // Successful connected
 
- stompClient.addListener(new ISTOMPListener() {
-     @Override
-     public void stompConnected() {
-        
-         stompClient.subscribe("/topic/echo", message -> {
-             LOG.info("STOMP server sent: " + message);
-         });
+        connection.subscribe("/topic/echo", message -> {
+            // Simple echo subscription to test
+            LOG.info("STOMP server sent: " + message);
+        });
 
-         stompClient.stompSend("/echo", "hello world!");
-     }
+        connection.stompSend("/app/echo", "hello world!");
+    }
 
-     @Override
-     public void stompClosed() {
-        LOG.info("bye!");
-     }
- });
+    @Override
+    public void connectionFailed(Throwable e) {
+        LOG.error("Could not connect!", e);
+    }
+
+    @Override
+    public void disconnected(String reason) {
+        LOG.error("Lost connection: " + reason);
+    }
+});
 ```
 
 
