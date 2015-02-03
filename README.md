@@ -43,6 +43,29 @@ StompClient.connectOverWebSocket("ws://myServer.com/messages", new ISTOMPListene
 });
 ```
 
-
+Maven Dependency
+----------------
+This library is deployed to my [bintray](https://bintray.com) repository.
 
 [ ![Download](https://api.bintray.com/packages/isnull/maven/LightSTOMP/images/download.svg) ](https://bintray.com/isnull/maven/LightSTOMP/_latestVersion)
+
+In order to use this dependency in your project, add the bintray repository:
+```
+        <repository>
+            <id>bintray-isnull</id>
+            <name>BinTray Repository (IsNull)</name>
+            <url>http://dl.bintray.com/isnull/maven/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+```
+
+Then you can use the dependency as if it where on [Maven Central](http://search.maven.org/):
+```
+        <dependency>
+            <groupId>light-stomp</groupId>
+            <artifactId>light-stomp-client</artifactId>
+            <version>0.1.3</version>
+        </dependency>
+```
