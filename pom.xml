@@ -5,10 +5,15 @@
 
     <groupId>light-stomp</groupId>
     <artifactId>light-stomp-client</artifactId>
-    <version>0.1.3</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
     <name>LightSTOMP</name>
     <description>A lightweight STOMP Client for Java supporting WebSockets</description>
+
+	<properties>
+		<tyrus.version>1.19</tyrus.version>
+		
+	</properties>
 
     <licenses>
         <license>
@@ -37,13 +42,13 @@
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-client</artifactId>
-            <version>1.9</version>
+            <version>${tyrus.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-container-grizzly-client</artifactId>
-            <version>1.9</version>
+            <version>${tyrus.version}</version>
         </dependency>
 
 
@@ -67,7 +72,6 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -76,7 +80,6 @@
 
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12.3</version>
                 <configuration>
                     <excludes>
                     </excludes>
