@@ -37,14 +37,17 @@ class SubscriptionRouter {
      * listeners of this channel.
      * @param channel
      * @param message
+     * @param headers
      */
-    public synchronized void routeMessage(String channel, String message){
-        List<MessageListener> listeners = channelToListenerMap.get(channel);
+	public void routeMessage(String channel, String message, Map<String, String> headers) {
+		List<MessageListener> listeners = channelToListenerMap.get(channel);
         if(listeners != null){
             for(MessageListener l : listeners){
-                l.messageReceived(message);
+            	l.messageReceived(message);
+            	l.messageReceived(message, headers);
             }
         }
-    }
+		
+	}
 
 }
