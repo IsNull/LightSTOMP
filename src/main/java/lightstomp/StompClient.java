@@ -196,7 +196,7 @@ public class StompClient {
     private void handleServerMessage(StompFrame frame) {
         String channel = frame.getHeaderValue("destination");
         if(channel != null){
-            subscriptionRouter.routeMessage(channel, frame.getBody());
+            subscriptionRouter.routeMessage(channel, frame.getBody(), frame.getHeaders());
         }else{
             LOG.warn("Message frame was missing destination!");
         }

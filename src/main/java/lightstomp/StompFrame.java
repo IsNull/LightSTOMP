@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -117,5 +118,13 @@ public class StompFrame {
 
     public String getBody() {
         return body;
+    }
+    
+    /**
+     * 
+     * @return unmodifiable Map of MessageHeaders
+     */
+    public Map<String, String> getHeaders(){
+    	return Collections.unmodifiableMap(headers);
     }
 }

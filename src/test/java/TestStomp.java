@@ -1,5 +1,6 @@
 
 import lightstomp.ISTOMPListener;
+import lightstomp.MessageListener;
 import lightstomp.StompClient;
 import org.glassfish.tyrus.client.ClientManager;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 /**
  * Created by paba on 11/17/14.
@@ -43,14 +45,25 @@ public class TestStomp {
                 public void connectionSuccess(StompClient connection) {
                     LOG.info("Stomp connected!");
 
-                    connection.subscribe("/topic/echo", message -> {
-                        // Simple echo subscription to test
-                        LOG.info("STOMP server sent: " + message);
-                    });
+                    connection.subscribe("/topic/echo", new MessageListener() {
+						@Override
+						public void messageReceived(String message, Map<String, String> headers) {
+						}
+						@Override
+						public void messageReceived(String message) {
+							LOG.info("STOMP server sent: " + message);							
+						}
+					});
 
-                    connection.subscribe("/topic/simulators/"+ raceTrackId + "/news", message -> {
-                        LOG.info("Got News: " + message);
-                    });
+                    connection.subscribe("/topic/simulators/"+ raceTrackId + "/news", new MessageListener() {
+						@Override
+						public void messageReceived(String message, Map<String, String> headers) {
+						}
+						@Override
+						public void messageReceived(String message) {
+							LOG.info("Got News: " + message);					
+						}
+					});
 
                     connection.stompSend("/stomp/msg", "hello world!");
                 }
